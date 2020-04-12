@@ -117,7 +117,6 @@ void DetectorBase::displayFeatureGrid(const char * title,
       }
     }
     cv::imshow(title, canvas);
-    cv::waitKey();
 
     if(draw_on_level0) {
       break;
@@ -148,7 +147,6 @@ void DetectorBase::displayFeatures(const char * title,
                  10);
     }
     cv::imshow(title, canvas);
-    cv::waitKey();
 
     if(draw_on_level0) {
       break;
