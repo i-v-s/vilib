@@ -193,8 +193,14 @@ void Subframe::copy_to(cv::Mat & h_img,
   }
 }
 
+vilib::Subframe::operator cv::Mat() const {
+    cv::Mat result;
+    copy_to(result);
+    return result;
+}
+
 void Subframe::display(void) const {
-  // copy image to a temporary buffer and display that
+    // copy image to a temporary buffer and display that
   std::string subframe_title("Subframe (");
   subframe_title += std::to_string(width_);
   subframe_title += "x";

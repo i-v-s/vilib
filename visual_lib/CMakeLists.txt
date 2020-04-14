@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
-project(vilib LANGUAGES CXX CUDA)
+project(vilib VERSION 0.1 LANGUAGES CXX CUDA)
 
 option(WITH_TEST "Build test" OFF)
 option(WITH_PYTHON "Build Python bindings" ON)
@@ -32,8 +32,19 @@ set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
 )
 add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
 
-target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC include ${OpenCV_INCLUDE_DIRS})
-target_link_libraries(${CMAKE_PROJECT_NAME} CUDA::cudart Eigen3::Eigen ${OpenCV_LIBS})
+
+target_include_directories(${CMAKE_PROJECT_NAME}
+    PUBLIC
+        $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    PRIVATE
+        ${OpenCV_INCLUDE_DIRS}
+)
+
+#target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC include ${OpenCV_INCLUDE_DIRS})
+target_link_libraries(${CMAKE_PROJECT_NAME}
+    PUBLIC CUDA::cudart Eigen3::Eigen ${OpenCV_LIBS}
+)
 
 
 # Build Python bindings
@@ -59,8 +70,6 @@ if(WITH_PYTHON)
         ${TORCH_LIB_DIR}/libc10.so
         ${TORCH_LIB_DIR}/libc10_cuda.so
         ${TORCH_LIB_DIR}/libtorch_python.so
-        #${TORCH_LIB_DIR}/libnvToolsExt-3965bdd0.so.1
-        #${TORCH_LIB_DIR}/libshm.so
     )
 
     message("TORCH_INCLUDE_DIR is ${TORCH_INCLUDE_DIR}")
@@ -108,3 +117,30 @@ if(WITH_TEST)
     target_include_directories(${TEST_NAME} PRIVATE test/include)
     target_link_libraries(${TEST_NAME} ${CMAKE_PROJECT_NAME} ${OpenCV_LIBS})
 endif(WITH_TEST)
+
+
+# Config and install
+
+install(
+    TARGETS vilib
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
+    INCLUDES DESTINATION include
+)
+
+include(CMakePackageConfigHelpers)
+
+write_basic_package_version_file(
+    vilibConfigVersion.cmake
+    VERSION ${PACKAGE_VERSION}
+    COMPATIBILITY AnyNewerVersion
+)
+
+export(TARGETS vilib NAMESPACE vilib:: FILE vilibTargets.cmake)
+
+configure_file(vilibConfig.cmake.in vilibConfig.cmake @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vilibConfig.cmake"
+              "${CMAKE_CURRENT_BINARY_DIR}/vilibConfigVersion.cmake"
+        DESTINATION lib/cmake/vilib
+        )

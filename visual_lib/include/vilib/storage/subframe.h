@@ -56,6 +56,7 @@ public:
   void copy_to(cv::Mat & h_img,
                bool async = false,
                cudaStream_t stream_num = 0) const;
+  operator cv::Mat() const;
   void display(void) const;
 
   std::size_t width_;       // width of a subframe in pixel units

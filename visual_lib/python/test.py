@@ -8,7 +8,7 @@ import numpy as np
 from time import time
 
 
-def main(use_gpu=True):
+def main(use_gpu=False):
     print(torch.__version__)
     print(dir(pyvilib))
 
@@ -28,7 +28,6 @@ def main(use_gpu=True):
             detector = (
                 FastDetectorGpu if use_gpu else FastDetectorCpuGrid
             )(w, h, 64, 64, 0, 1, 0, 0, 10.0, 10, pyvilib.SUM_OF_ABS_DIFF_ON_ARC)
-            # gpu = FastDetectorGpu(640, 480, 32, 32, 0, 1, 0, 0, 10.0, 10, pyvilib.SUM_OF_ABS_DIFF_ON_ARC)
 
         image = torch.tensor(image[:, :, :1])
         t1 = time()
