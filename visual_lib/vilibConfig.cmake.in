@@ -9,4 +9,6 @@ find_dependency(CUDAToolkit REQUIRED)
 # Any extra setup
 
 # Add the targets file
-include("${CMAKE_CURRENT_LIST_DIR}/vilibTargets.cmake")
+if(NOT TARGET vilib::vilib)
+    include("${CMAKE_CURRENT_LIST_DIR}/vilibTargets.cmake")
+endif()

@@ -22,18 +22,22 @@ aux_source_directory(src/storage SOURCES)
 aux_source_directory(src/preprocess SOURCES)
 
 add_library(
-    ${CMAKE_PROJECT_NAME} SHARED
+    vilib SHARED
     ${SOURCES}
 )
 
-set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
+add_library(
+    vilib::vilib ALIAS vilib
+)
+
+set_target_properties(vilib PROPERTIES
     CXX_STANDARD 17
     CXX_EXTENSIONS OFF
 )
 add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
 
 
-target_include_directories(${CMAKE_PROJECT_NAME}
+target_include_directories(vilib
     PUBLIC
         $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -42,7 +46,7 @@ target_include_directories(${CMAKE_PROJECT_NAME}
 )
 
 #target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC include ${OpenCV_INCLUDE_DIRS})
-target_link_libraries(${CMAKE_PROJECT_NAME}
+target_link_libraries(vilib
     PUBLIC CUDA::cudart Eigen3::Eigen ${OpenCV_LIBS}
 )
 
@@ -52,12 +56,14 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 if(WITH_PYTHON)
     find_package(Python3 REQUIRED Interpreter Development)
     # find_package(Torch REQUIRED)
-    # find_package(pybind11 CONFIG REQUIRED)
+    if(NOT DEFINED PYBIND11_VERSION_MAJOR)
+        find_package(pybind11 REQUIRED)
+    endif()
 
-    add_subdirectory(python/pybind11)
+    #add_subdirectory(python/pybind11)
     #pybind11_add_module(pyvilib python/src/vilib.cpp)
 
-    message("Python3_EXECUTABLE is ${Python3_EXECUTABLE}")
+    message(STATUS "Python3_EXECUTABLE is ${Python3_EXECUTABLE}")
     exec_program(${Python3_EXECUTABLE}
                  ARGS "-c \"from os.path import join, split; import torch; print(split(torch.__file__)[0])\""
                  OUTPUT_VARIABLE TORCH_DIR
@@ -72,8 +78,8 @@ if(WITH_PYTHON)
         ${TORCH_LIB_DIR}/libtorch_python.so
     )
 
-    message("TORCH_INCLUDE_DIR is ${TORCH_INCLUDE_DIR}")
-    message("TORCH_LIBRARIES is ${TORCH_LIBRARIES}")
+    message(STATUS "TORCH_INCLUDE_DIR is ${TORCH_INCLUDE_DIR}")
+    message(STATUS "TORCH_LIBRARIES is ${TORCH_LIBRARIES}")
     add_library(pyvilib MODULE
         python/src/vilib.cpp
         python/src/torch_frame.cpp
@@ -87,10 +93,10 @@ if(WITH_PYTHON)
     target_link_libraries(pyvilib PRIVATE
         Python3::Python
         pybind11::module
+        vilib
         Eigen3::Eigen
         #CUDA::cudart
         ${TORCH_LIBRARIES}
-        ${CMAKE_PROJECT_NAME}
     )
     set_target_properties(pyvilib PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"
                                              SUFFIX "${PYTHON_MODULE_EXTENSION}")
@@ -115,7 +121,7 @@ if(WITH_TEST)
         ${TEST_SOURCES}
     )
     target_include_directories(${TEST_NAME} PRIVATE test/include)
-    target_link_libraries(${TEST_NAME} ${CMAKE_PROJECT_NAME} ${OpenCV_LIBS})
+    target_link_libraries(${TEST_NAME} vilib ${OpenCV_LIBS})
 endif(WITH_TEST)
 
 
