@@ -95,7 +95,7 @@ std::size_t TorchFrame::getNewId(void) {
 
 TorchFrame::~TorchFrame(void) {
   // return the pyramid buffers
-  //PyramidPool::release(pyramid_);
+  PyramidPool::release(pyramid_);
 }
 
 /*image_pyramid_descriptor_t TorchFrame::getPyramidDescriptor(void) const {
