@@ -35,6 +35,10 @@ void preprocess_image(const cv::Mat & img,
                       std::vector<std::shared_ptr<Subframe>> & pyramid,
                       cudaStream_t stream);
 
+void preprocess_image(const Subframe & img,
+                      std::vector<std::shared_ptr<Subframe>> & pyramid,
+                      cudaStream_t stream);
+
 #ifdef ROS_SUPPORT
 void preprocess_image(const sensor_msgs::ImageConstPtr & msg,
                       std::vector<std::shared_ptr<Subframe>> & pyramid,

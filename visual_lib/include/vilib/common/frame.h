@@ -40,6 +40,10 @@ public:
         const int64_t timestamp_nsec,
         const std::size_t n_pyr_levels,
         cudaStream_t stream = 0);
+  Frame(const Subframe & img,
+        const int64_t timestamp_nsec,
+        const std::size_t n_pyr_levels,
+        cudaStream_t stream = 0);
 #ifdef ROS_SUPPORT
   Frame(const sensor_msgs::ImageConstPtr & msg,
         const std::size_t n_pyr_levels,

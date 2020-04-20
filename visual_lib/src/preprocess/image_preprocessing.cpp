@@ -30,14 +30,30 @@ void preprocess_image(const cv::Mat & img,
                       cudaStream_t stream) {
   // Copy input to preallocated buffer
   BENCHMARK_START_HOST(DetectorBenchmark,Upload,true);
-  pyramid[0]->copy_from(img,true,stream);
+  pyramid[0]->copy_from(img, true, stream);
   BENCHMARK_STOP_HOST(DetectorBenchmark,Upload);
 
   // Create the pyramid
   BENCHMARK_START_DEVICE(DetectorBenchmark,Pyramid,0);
-  pyramid_create_gpu(pyramid,stream);
+  pyramid_create_gpu(pyramid, stream);
   BENCHMARK_STOP_DEVICE(DetectorBenchmark,Pyramid,0);
 }
+
+
+void preprocess_image(const Subframe & img,
+                      std::vector<std::shared_ptr<Subframe>> & pyramid,
+                      cudaStream_t stream) {
+  // Copy input to preallocated buffer
+  BENCHMARK_START_HOST(DetectorBenchmark, Upload, true);
+  pyramid[0]->copy_from(img, true, stream);
+  BENCHMARK_STOP_HOST(DetectorBenchmark, Upload);
+
+  // Create the pyramid
+  BENCHMARK_START_DEVICE(DetectorBenchmark, Pyramid, 0);
+  pyramid_create_gpu(pyramid, stream);
+  BENCHMARK_STOP_DEVICE(DetectorBenchmark, Pyramid, 0);
+}
+
 
 #ifdef ROS_SUPPORT
 void preprocess_image(const sensor_msgs::ImageConstPtr & msg,

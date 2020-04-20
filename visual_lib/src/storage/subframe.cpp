@@ -30,14 +30,29 @@
 #include "vilib/storage/subframe_pool.h"
 #include "vilib/storage/opencv.h"
 #include "vilib/storage/ros.h"
+#include "vilib/cuda_common.h"
 
 namespace vilib {
 
 Subframe::Subframe(std::size_t width,
                    std::size_t height,
                    std::size_t data_bytes,
+                   Subframe::MemoryType type,
+                   void *data,
+                   std::size_t pitch) :
+    cols(width), rows(height), data_bytes_(data_bytes), type_(type),
+    pitch_(pitch ? pitch : width * data_bytes), data_(static_cast<unsigned char*>(data)),
+    ownMemory(false)
+{
+    assert(pitch >= width * data_bytes);
+}
+
+Subframe::Subframe(std::size_t width,
+                   std::size_t height,
+                   std::size_t data_bytes,
                    MemoryType type) :
-  width_(width),height_(height),data_bytes_(data_bytes),type_(type) {
+  cols(width), rows(height), data_bytes_(data_bytes), type_(type), ownMemory(true)
+{
   // perform the memory allocations
   switch(type) {
     case MemoryType::PAGED_HOST_MEMORY: {
@@ -77,26 +92,66 @@ Subframe::Subframe(std::size_t width,
 }
 
 Subframe::~Subframe(void) {
-  // perform the memory deallocations
-  switch(type_) {
-    case MemoryType::PAGED_HOST_MEMORY: {
-      free(data_);
-      break;
-    }
-    case MemoryType::PINNED_HOST_MEMORY: {
-      cudaFreeHost(data_);
-      break;
-    }
+    // perform the memory deallocations
+    if (ownMemory) switch(type_) {
+    case MemoryType::PAGED_HOST_MEMORY:
+        free(data_);
+        break;
+    case MemoryType::PINNED_HOST_MEMORY:
+        cudaFreeHost(data_);
+        break;
     case MemoryType::LINEAR_DEVICE_MEMORY:
-      /* fall-through */
+        /* fall-through */
     case MemoryType::PITCHED_DEVICE_MEMORY:
-      /* fall-through */
-    case MemoryType::UNIFIED_MEMORY: {
-      cudaFree(data_);
-      break;
+        /* fall-through */
+    case MemoryType::UNIFIED_MEMORY:
+        cudaFree(data_);
+        break;
     }
-  }
 }
+
+void Subframe::copy_from(const Subframe & h_img,
+                         bool async,
+                         cudaStream_t stream_num) {
+    assert(h_img.cols == cols && h_img.rows == rows && h_img.data_bytes_ == data_bytes_);
+    cudaMemcpyKind kind = cudaMemcpyDefault;
+    switch(type_) {
+    case MemoryType::PAGED_HOST_MEMORY:
+    case MemoryType::PINNED_HOST_MEMORY:
+    case MemoryType::UNIFIED_MEMORY:
+        switch(h_img.type_) {
+        case MemoryType::PAGED_HOST_MEMORY:
+        case MemoryType::PINNED_HOST_MEMORY:
+        case MemoryType::UNIFIED_MEMORY:
+            kind = cudaMemcpyHostToHost;
+            break;
+        case MemoryType::LINEAR_DEVICE_MEMORY:
+        case MemoryType::PITCHED_DEVICE_MEMORY:
+            kind = cudaMemcpyDeviceToHost;
+            break;
+        }
+        break;
+    case MemoryType::LINEAR_DEVICE_MEMORY:
+    case MemoryType::PITCHED_DEVICE_MEMORY:
+        switch(h_img.type_) {
+        case MemoryType::PAGED_HOST_MEMORY:
+        case MemoryType::PINNED_HOST_MEMORY:
+        case MemoryType::UNIFIED_MEMORY:
+            kind = cudaMemcpyHostToDevice;
+            break;
+        case MemoryType::LINEAR_DEVICE_MEMORY:
+        case MemoryType::PITCHED_DEVICE_MEMORY:
+            kind = cudaMemcpyDeviceToDevice;
+            break;
+        }
+        break;
+    }
+    if(async)
+        CUDA_API_CALL(cudaMemcpy2DAsync(data_, pitch_, h_img.data_, h_img.pitch_, cols, rows, kind, stream_num));
+    else
+        CUDA_API_CALL(cudaMemcpy2D(data_, pitch_, h_img.data_, h_img.pitch_, cols, rows, kind));
+}
+
 
 void Subframe::copy_from(const cv::Mat & h_img,
                          bool async,
@@ -171,8 +226,8 @@ void Subframe::copy_to(cv::Mat & h_img,
     case MemoryType::UNIFIED_MEMORY: {
       opencv_copy_from_host_to_image(h_img,
                                      data_,
-                                     width_,
-                                     height_,
+                                     cols,
+                                     rows,
                                      data_bytes_,
                                      pitch_);
       break;
@@ -182,8 +237,8 @@ void Subframe::copy_to(cv::Mat & h_img,
     case MemoryType::PITCHED_DEVICE_MEMORY: {
       opencv_copy_from_gpu_to_image(h_img,
                                     data_,
-                                    width_,
-                                    height_,
+                                    cols,
+                                    rows,
                                     data_bytes_,
                                     pitch_,
                                     async,
@@ -202,14 +257,27 @@ vilib::Subframe::operator cv::Mat() const {
 void Subframe::display(void) const {
     // copy image to a temporary buffer and display that
   std::string subframe_title("Subframe (");
-  subframe_title += std::to_string(width_);
+  subframe_title += std::to_string(cols);
   subframe_title += "x";
-  subframe_title += std::to_string(height_);
+  subframe_title += std::to_string(rows);
   subframe_title += ")";
   cv::Mat image;
   copy_to(image);
   cv::imshow(subframe_title.c_str(), image);
   cv::waitKey();
+}
+
+int Subframe::type() const
+{
+    switch(data_bytes_) {
+    case 1: return CV_8UC1;
+    case 2: return CV_8UC2;
+    case 3: return CV_8UC3;
+    case 4: return CV_8UC4;
+    default:
+        assert(!"Unknown type.");
+        return 0;
+    }
 }
 
 } // namespace vilib

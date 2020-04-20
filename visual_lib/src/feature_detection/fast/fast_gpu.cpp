@@ -94,8 +94,8 @@ void FASTGPU::detectBase(const std::vector<std::shared_ptr<Subframe>> & pyramid)
   BENCHMARK_START_DEVICE(DetectorBenchmark,CRF,stream_);
   for(std::size_t level=min_level_;level<pyramid.size() && level<max_level_;++level) {
     std::size_t level_resp = level-min_level_;
-    fast_gpu_calc_corner_response(pyramid[level]->width_,
-                                  pyramid[level]->height_,
+    fast_gpu_calc_corner_response(pyramid[level]->cols,
+                                  pyramid[level]->rows,
                                   pyramid[level]->pitch_,
                                   pyramid[level]->data_,
                                   det_horizontal_border_,

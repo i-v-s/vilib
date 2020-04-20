@@ -41,8 +41,20 @@ Frame::Frame(const cv::Mat & img,
         img.cols,
         img.rows,
         n_pyr_levels) {
-  preprocess_image(img,pyramid_,stream);
+  preprocess_image(img, pyramid_, stream);
 }
+
+Frame::Frame(const Subframe & img,
+             const int64_t timestamp_nsec,
+             const std::size_t n_pyr_levels,
+             cudaStream_t stream) :
+  Frame(timestamp_nsec,
+        img.cols,
+        img.rows,
+        n_pyr_levels) {
+  preprocess_image(img, pyramid_, stream);
+}
+
 
 #ifdef ROS_SUPPORT
 Frame::Frame(const sensor_msgs::ImageConstPtr & msg,

@@ -66,8 +66,8 @@ std::shared_ptr<Subframe> SubframePool::get_subframe(void) {
 }
 
 void SubframePool::return_subframe(std::shared_ptr<Subframe> frame) {
-  assert(frame->width_  == width_);
-  assert(frame->height_ == height_);
+  assert(frame->cols  == width_);
+  assert(frame->rows == height_);
   assert(frame->type_   == type_);
   std::lock_guard<std::mutex> lock(items_mutex_);
   items_.push_front(frame);

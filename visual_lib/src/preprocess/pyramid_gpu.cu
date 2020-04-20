@@ -244,10 +244,10 @@ __host__ void pyramid_create_gpu(std::vector<std::shared_ptr<Subframe>> & d_subf
                              d_subframes[l]->data_,
                              d_subframes[l-1]->pitch_,
                              d_subframes[l]->pitch_,
-                             d_subframes[l-1]->width_,
-                             d_subframes[l]->width_,
-                             d_subframes[l-1]->height_,
-                             d_subframes[l]->height_,
+                             d_subframes[l-1]->cols,
+                             d_subframes[l]->cols,
+                             d_subframes[l-1]->rows,
+                             d_subframes[l]->rows,
                              stream);
   }
 }
