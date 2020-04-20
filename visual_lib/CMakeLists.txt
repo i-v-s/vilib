@@ -21,7 +21,7 @@ aux_source_directory(src/feature_tracker SOURCES)
 aux_source_directory(src/storage SOURCES)
 aux_source_directory(src/preprocess SOURCES)
 
-add_library(vilib SHARED ${SOURCES})
+add_library(vilib ${SOURCES})
 
 add_library(
     vilib::vilib ALIAS vilib
@@ -30,6 +30,7 @@ add_library(
 set_target_properties(vilib PROPERTIES
     CXX_STANDARD 17
     CXX_EXTENSIONS OFF
+    POSITION_INDEPENDENT_CODE ON
 )
 add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
 
@@ -78,30 +79,6 @@ write_basic_package_version_file(
     VERSION ${PACKAGE_VERSION}
     COMPATIBILITY AnyNewerVersion
 )
-
-# Build Python bindings
-
-if(WITH_PYTHON)
-    include(python/CMakeLists.txt)
-    install(
-        TARGETS vilib torch_vilib
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-        RUNTIME DESTINATION bin
-        INCLUDES DESTINATION include
-    )
-    export(TARGETS vilib NAMESPACE vilib:: FILE vilibTargets.cmake)
-else()
-    install(
-        TARGETS vilib
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-        RUNTIME DESTINATION bin
-        INCLUDES DESTINATION include
-    )
-    export(TARGETS vilib NAMESPACE vilib:: FILE vilibTargets.cmake)
-endif(WITH_PYTHON)
-
 
 configure_file(vilibConfig.cmake.in vilibConfig.cmake @ONLY)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/vilibConfig.cmake"
