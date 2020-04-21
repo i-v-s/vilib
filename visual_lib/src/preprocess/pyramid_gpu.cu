@@ -237,17 +237,17 @@ __host__ void pyramid_create_gpu(std::vector<unsigned char *> & d_images,
   }
 }
 
-__host__ void pyramid_create_gpu(std::vector<std::shared_ptr<Subframe>> & d_subframes,
+__host__ void pyramid_create_gpu(std::vector<Subframe> & d_subframes,
                                  cudaStream_t stream) {
   for(std::size_t l=1;l<d_subframes.size();++l) {
-    pyramid_create_level_gpu(d_subframes[l-1]->data_,
-                             d_subframes[l]->data_,
-                             d_subframes[l-1]->pitch_,
-                             d_subframes[l]->pitch_,
-                             d_subframes[l-1]->cols,
-                             d_subframes[l]->cols,
-                             d_subframes[l-1]->rows,
-                             d_subframes[l]->rows,
+    pyramid_create_level_gpu(d_subframes[l-1].data_,
+                             d_subframes[l].data_,
+                             d_subframes[l-1].pitch_,
+                             d_subframes[l].pitch_,
+                             d_subframes[l-1].cols,
+                             d_subframes[l].cols,
+                             d_subframes[l-1].rows,
+                             d_subframes[l].rows,
                              stream);
   }
 }

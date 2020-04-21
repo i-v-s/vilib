@@ -82,7 +82,7 @@ FASTGPU::~FASTGPU(void) {
 #endif /* FAST_GPU_USE_LOOKUP_TABLE */
 }
 
-void FASTGPU::detectBase(const std::vector<std::shared_ptr<Subframe>> & pyramid) {
+void FASTGPU::detectBase(const std::vector<Subframe> & pyramid) {
   /*
    * FAST corner detection process:
    * - the image is already in GPU memory
@@ -94,10 +94,10 @@ void FASTGPU::detectBase(const std::vector<std::shared_ptr<Subframe>> & pyramid)
   BENCHMARK_START_DEVICE(DetectorBenchmark,CRF,stream_);
   for(std::size_t level=min_level_;level<pyramid.size() && level<max_level_;++level) {
     std::size_t level_resp = level-min_level_;
-    fast_gpu_calc_corner_response(pyramid[level]->cols,
-                                  pyramid[level]->rows,
-                                  pyramid[level]->pitch_,
-                                  pyramid[level]->data_,
+    fast_gpu_calc_corner_response(pyramid[level].cols,
+                                  pyramid[level].rows,
+                                  pyramid[level].pitch_,
+                                  pyramid[level].data_,
                                   det_horizontal_border_,
                                   det_vertical_border_,
 #if FAST_GPU_USE_LOOKUP_TABLE
@@ -118,12 +118,12 @@ void FASTGPU::detectBase(const std::vector<std::shared_ptr<Subframe>> & pyramid)
   processResponse();
 }
 
-void FASTGPU::detect(const std::vector<std::shared_ptr<Subframe>> & pyramid) {
+void FASTGPU::detect(const std::vector<Subframe> &pyramid) {
   detectBase(pyramid);
   processGrid();
 }
 
-void FASTGPU::detect(const std::vector<std::shared_ptr<Subframe>> & pyramid,
+void FASTGPU::detect(const std::vector<Subframe> &pyramid,
                      std::function<void(const std::size_t &  /* cell count */,
                                         const float *  /* pos */,
                                         const float *  /* score */,

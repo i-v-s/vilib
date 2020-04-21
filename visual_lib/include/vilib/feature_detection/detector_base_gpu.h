@@ -46,8 +46,8 @@ public:
   void setStream(cudaStream_t stream);
   cudaStream_t getStream(void);
 
-  virtual void detect(const std::vector<std::shared_ptr<Subframe>> & pyramid) = 0;
-  virtual void detect(const std::vector<std::shared_ptr<Subframe>> & pyramid,
+  virtual void detect(const std::vector<Subframe> & pyramid) = 0;
+  virtual void detect(const std::vector<Subframe> & pyramid,
                       std::function<void(const std::size_t & /* cell count */,
                                          const float *       /* pos */,
                                          const float *       /* score */,

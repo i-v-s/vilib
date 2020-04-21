@@ -31,6 +31,7 @@
 #endif /* ROS_SUPPORT */
 #include "vilib/common/types.h"
 #include "vilib/storage/subframe.h"
+#include "vilib/storage/pyramid_pool.h"
 
 namespace vilib {
 
@@ -60,7 +61,9 @@ public:
   // Timestamp of frame in nanoseconds
   int64_t timestamp_nsec_;
   // Vector holding the image pyramid either in host or GPU memory
-  std::vector<std::shared_ptr<Subframe>> pyramid_;
+  std::vector<Subframe> pyramid_;
+
+  PyramidPool *pyramid_pool;
 
   // Number of successfully extracted features
   std::size_t num_features_ = 0u;
@@ -76,9 +79,9 @@ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 private:
   Frame(const int64_t timestamp_nsec,
-        const std::size_t image_width,
-        const std::size_t image_height,
-        const std::size_t n_pyr_levels);
+        uint image_width,
+        uint image_height,
+        uint n_pyr_levels);
 
   static std::size_t getNewId(void);
 

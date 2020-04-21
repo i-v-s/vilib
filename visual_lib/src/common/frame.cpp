@@ -23,7 +23,6 @@
 #include <sensor_msgs/image_encodings.h>
 #endif /* ROS_SUPPORT */
 #include "vilib/common/frame.h"
-#include "vilib/storage/pyramid_pool.h"
 #include "vilib/preprocess/image_preprocessing.h"
 #include "vilib/preprocess/pyramid.h"
 #include "vilib/config.h"
@@ -37,22 +36,22 @@ Frame::Frame(const cv::Mat & img,
              const int64_t timestamp_nsec,
              const std::size_t n_pyr_levels,
              cudaStream_t stream) :
-  Frame(timestamp_nsec,
-        img.cols,
-        img.rows,
-        n_pyr_levels) {
-  preprocess_image(img, pyramid_, stream);
+    Frame(timestamp_nsec,
+          img.cols,
+          img.rows,
+          n_pyr_levels) {
+    preprocess_image(img, pyramid_, stream);
 }
 
 Frame::Frame(const Subframe & img,
              const int64_t timestamp_nsec,
              const std::size_t n_pyr_levels,
              cudaStream_t stream) :
-  Frame(timestamp_nsec,
-        img.cols,
-        img.rows,
-        n_pyr_levels) {
-  preprocess_image(img, pyramid_, stream);
+    Frame(timestamp_nsec,
+          img.cols,
+          img.rows,
+          n_pyr_levels) {
+    preprocess_image(img, pyramid_, stream);
 }
 
 
@@ -69,22 +68,18 @@ Frame::Frame(const sensor_msgs::ImageConstPtr & msg,
 #endif /* ROS_SUPPORT */
 
 Frame::Frame(const int64_t timestamp_nsec,
-             const std::size_t image_width,
-             const std::size_t image_height,
-             const std::size_t n_pyr_levels) :
-  id_(getNewId()),
-  timestamp_nsec_(timestamp_nsec) {
+             uint image_width,
+             uint image_height,
+             uint n_pyr_levels) :
+    id_(getNewId()),
+    timestamp_nsec_(timestamp_nsec),
+    pyramid_pool(PyramidPool::get_pool(image_width, image_height, 1, n_pyr_levels, IMAGE_PYRAMID_MEMORY_TYPE))
   /*
    * Note: we allocate space for a grayscale image,
    *       irrespective of the input image
    */
-  PyramidPool::get(IMAGE_PYRAMID_PREALLOCATION_ITEM_NUM,
-                   image_width,
-                   image_height,
-                   1,
-                   n_pyr_levels,
-                   IMAGE_PYRAMID_MEMORY_TYPE,
-                   pyramid_);
+{
+    pyramid_pool->get(pyramid_);
 }
 
 std::size_t Frame::getNewId(void) {
@@ -93,15 +88,15 @@ std::size_t Frame::getNewId(void) {
 }
 
 Frame::~Frame(void) {
-  // return the pyramid buffers
-  PyramidPool::release(pyramid_);
+    // return the pyramid buffers
+    pyramid_pool->release(std::move(pyramid_));
 }
 
 image_pyramid_descriptor_t Frame::getPyramidDescriptor(void) const {
   image_pyramid_descriptor_t i;
-  i.desc = PyramidPool::get_descriptor();
+  i.desc = pyramid_pool->get_descriptor();
   for(std::size_t l=0;l<pyramid_.size();++l) {
-    i.data[l] = pyramid_[l]->data_;
+    i.data[l] = pyramid_[l].data_;
   }
   return i;
 }

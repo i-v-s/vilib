@@ -43,14 +43,14 @@ public:
           const int min_arc_length,
           fast_score score);
   ~FASTGPU(void);
-  void detect(const std::vector<std::shared_ptr<Subframe>> & pyramid);
-  void detect(const std::vector<std::shared_ptr<Subframe>> & pyramid,
+  void detect(const std::vector<Subframe> & pyramid);
+  void detect(const std::vector<Subframe> & pyramid,
               std::function<void(const std::size_t & /* cell count */,
                                  const float *       /* pos */,
                                  const float *       /* score */,
                                  const int *         /* level */)> callback);
 private:
-  void detectBase(const std::vector<std::shared_ptr<Subframe>> & pyramid);
+  void detectBase(const std::vector<Subframe> &pyramid);
 
   // Detector parameters
   float threshold_;     // threshold value for creating a histerisis, usually 10.0f

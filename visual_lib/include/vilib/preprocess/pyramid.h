@@ -82,7 +82,7 @@ void pyramid_create_gpu(std::vector<unsigned char *> & d_images,
  * It is expected that the subframe buffers lie in the GPU memory
  * @param d_subframes a vector of preallocated Subframes (level 0 is deemed the original image)
  */
-void pyramid_create_gpu(std::vector<std::shared_ptr<Subframe>> & d_subframes,
+void pyramid_create_gpu(std::vector<Subframe> & d_subframes,
                         cudaStream_t stream);
 
 /*
@@ -96,6 +96,6 @@ void pyramid_display(const std::vector<cv::Mat> & pyramid);
  * There's no restriction on the memory location of the subframes.
  * @param subframes a vector of preallocated Subframes
  */
-void pyramid_display(const std::vector<std::shared_ptr<Subframe>> & subframes);
+void pyramid_display(const std::vector<Subframe> & subframes);
 
 } // namespace vilib

@@ -70,6 +70,7 @@ public:
     void display(void) const;
     constexpr bool empty() const {return false;}
     int type() const;
+    cv::Size size() const;
 
     std::size_t cols;       // width of a subframe in pixel units
     std::size_t rows;      // height of a subframe in pixel units

@@ -26,11 +26,11 @@
 namespace vilib {
 
 void preprocess_image(const cv::Mat & img,
-                      std::vector<std::shared_ptr<Subframe>> & pyramid,
+                      std::vector<Subframe> & pyramid,
                       cudaStream_t stream) {
   // Copy input to preallocated buffer
   BENCHMARK_START_HOST(DetectorBenchmark,Upload,true);
-  pyramid[0]->copy_from(img, true, stream);
+  pyramid[0].copy_from(img, true, stream);
   BENCHMARK_STOP_HOST(DetectorBenchmark,Upload);
 
   // Create the pyramid
@@ -41,11 +41,11 @@ void preprocess_image(const cv::Mat & img,
 
 
 void preprocess_image(const Subframe & img,
-                      std::vector<std::shared_ptr<Subframe>> & pyramid,
+                      std::vector<Subframe> & pyramid,
                       cudaStream_t stream) {
   // Copy input to preallocated buffer
   BENCHMARK_START_HOST(DetectorBenchmark, Upload, true);
-  pyramid[0]->copy_from(img, true, stream);
+  pyramid[0].copy_from(img, true, stream);
   BENCHMARK_STOP_HOST(DetectorBenchmark, Upload);
 
   // Create the pyramid

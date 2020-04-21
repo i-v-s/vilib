@@ -32,11 +32,11 @@
 namespace vilib {
 
 void preprocess_image(const cv::Mat & img,
-                      std::vector<std::shared_ptr<Subframe>> & pyramid,
+                      std::vector<Subframe> & pyramid,
                       cudaStream_t stream);
 
 void preprocess_image(const Subframe & img,
-                      std::vector<std::shared_ptr<Subframe>> & pyramid,
+                      std::vector<Subframe> &pyramid,
                       cudaStream_t stream);
 
 #ifdef ROS_SUPPORT

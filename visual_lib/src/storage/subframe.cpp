@@ -27,7 +27,6 @@
 #include <sensor_msgs/image_encodings.h>
 #endif /* ROS_SUPPORT */
 #include "vilib/storage/subframe.h"
-#include "vilib/storage/subframe_pool.h"
 #include "vilib/storage/opencv.h"
 #include "vilib/storage/ros.h"
 #include "vilib/cuda_common.h"
@@ -56,36 +55,36 @@ Subframe::Subframe(std::size_t width,
   // perform the memory allocations
   switch(type) {
     case MemoryType::PAGED_HOST_MEMORY: {
-      total_bytes_ = width*data_bytes*height; // packed: width * height * data_bytes
+      total_bytes_ = width * data_bytes * height; // packed: width * height * data_bytes
       data_ = (unsigned char *)malloc(total_bytes_);
-      pitch_ = width*data_bytes;
+      pitch_ = width * data_bytes;
       break;
     }
     case MemoryType::PINNED_HOST_MEMORY: {
       total_bytes_ = width*height*data_bytes; // packed: width * height * data_bytes
-      cudaMallocHost((void**)&data_,total_bytes_);
-      pitch_ = width*data_bytes;
+      cudaMallocHost((void**)&data_, total_bytes_);
+      pitch_ = width * data_bytes;
       break;
     }
     case MemoryType::LINEAR_DEVICE_MEMORY: {
       total_bytes_ = width*height*data_bytes; // packed: width * height * data_bytes
-      cudaMalloc((void**)&data_,total_bytes_);
-      pitch_ = width*data_bytes;
+      cudaMalloc((void**)&data_, total_bytes_);
+      pitch_ = width * data_bytes;
       break;
     }
     case MemoryType::PITCHED_DEVICE_MEMORY: {
-      cudaMallocPitch((void**)&data_,&pitch_,width*data_bytes,height);
+      cudaMallocPitch((void**)&data_, &pitch_, width * data_bytes, height);
       /*
        * Note to future self:
        * the returned pitch will be the calculated pitch in byte units
        */
-      total_bytes_ = pitch_*height;
+      total_bytes_ = pitch_ * height;
       break;
     }
     case MemoryType::UNIFIED_MEMORY: {
-      total_bytes_ = width*data_bytes*height; // packed: width * height * data_bytes
+      total_bytes_ = width * data_bytes * height; // packed: width * height * data_bytes
       cudaMallocManaged((void**)&data_,total_bytes_);
-      pitch_ = width*data_bytes;
+      pitch_ = width * data_bytes;
       break;
     }
   }
@@ -278,6 +277,11 @@ int Subframe::type() const
         assert(!"Unknown type.");
         return 0;
     }
+}
+
+cv::Size Subframe::size() const
+{
+    return cv::Size(cols, rows);
 }
 
 } // namespace vilib
