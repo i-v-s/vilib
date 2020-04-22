@@ -90,6 +90,20 @@ Subframe::Subframe(std::size_t width,
   }
 }
 
+Subframe::Subframe(Subframe &&other) :
+    cols(other.cols),
+    rows(other.rows),
+    data_bytes_(other.data_bytes_),
+    type_(other.type_),
+    total_bytes_(other.total_bytes_),
+    pitch_(other.pitch_),
+    data_(other.data_),
+    ownMemory(other.ownMemory)
+{
+    other.data_ = nullptr;
+    other.ownMemory = false;
+}
+
 Subframe::~Subframe(void) {
     // perform the memory deallocations
     if (ownMemory) switch(type_) {
@@ -107,6 +121,21 @@ Subframe::~Subframe(void) {
         cudaFree(data_);
         break;
     }
+}
+
+Subframe &Subframe::operator =(Subframe &&other)
+{
+    cols = other.cols;
+    rows = other.rows;
+    data_bytes_ = other.data_bytes_;
+    type_ = other.type_;
+    total_bytes_ = other.total_bytes_;
+    pitch_ = other.pitch_;
+    data_ = other.data_;
+    ownMemory = other.ownMemory;
+    other.data_ = nullptr;
+    other.ownMemory = false;
+    return *this;
 }
 
 void Subframe::copy_from(const Subframe & h_img,

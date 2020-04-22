@@ -44,6 +44,7 @@ public:
           fast_score score);
   ~FASTGPU(void);
   void detect(const std::vector<Subframe> & pyramid);
+  void detect(std::vector<std::shared_ptr<Subframe> > pyramid);
   void detect(const std::vector<Subframe> & pyramid,
               std::function<void(const std::size_t & /* cell count */,
                                  const float *       /* pos */,

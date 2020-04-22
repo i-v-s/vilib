@@ -51,7 +51,9 @@ public:
              std::size_t height,
              std::size_t data_bytes,
              MemoryType type);
+    Subframe(Subframe &&other);
     ~Subframe(void);
+    Subframe &operator =(Subframe &&other);
     void copy_from(const cv::Mat & h_img,
                    bool async = false,
                    cudaStream_t stream_num = 0);

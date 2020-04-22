@@ -92,8 +92,8 @@ void FASTGPU::detectBase(const std::vector<Subframe> & pyramid) {
    * - copy the feature grid back to host memory
    */
   BENCHMARK_START_DEVICE(DetectorBenchmark,CRF,stream_);
-  for(std::size_t level=min_level_;level<pyramid.size() && level<max_level_;++level) {
-    std::size_t level_resp = level-min_level_;
+  for(std::size_t level = min_level_; level < pyramid.size() && level < max_level_; ++level) {
+    std::size_t level_resp = level - min_level_;
     fast_gpu_calc_corner_response(pyramid[level].cols,
                                   pyramid[level].rows,
                                   pyramid[level].pitch_,
@@ -121,6 +121,15 @@ void FASTGPU::detectBase(const std::vector<Subframe> & pyramid) {
 void FASTGPU::detect(const std::vector<Subframe> &pyramid) {
   detectBase(pyramid);
   processGrid();
+}
+
+void FASTGPU::detect(std::vector<std::shared_ptr<Subframe> > pyramid)
+{
+    std::vector<Subframe> temp;
+    temp.reserve(pyramid.size());
+    for (const auto &sf : pyramid)
+        temp.emplace_back(sf->cols, sf->rows, sf->data_bytes_, sf->type_, sf->data_, sf->pitch_);
+    detect(temp);
 }
 
 void FASTGPU::detect(const std::vector<Subframe> &pyramid,
